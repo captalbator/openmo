@@ -1,0 +1,12 @@
+-std=c++17
+
+-I./src
+-I./extern
+-I./extern/pugixml/src
+-I./extern/glm
+-I./extern/glad/include
+-I./extern/nfd/src/include
+-I./extern/fmt/include
+-I./extern/SDL2/include
+
+-include ./src/pch.hpp

@@ -1,0 +1,16 @@
+[submodule "extern/pugixml"]
+	path = extern/pugixml
+	url = https://github.com/zeux/pugixml
+[submodule "extern/nfd"]
+	path = extern/nfd
+	url = https://github.com/btzy/nativefiledialog-extended
+[submodule "extern/glm"]
+	path = extern/glm
+	url = https://github.com/g-truc/glm
+[submodule "extern/SDL2"]
+	path = extern/SDL2
+	url = https://github.com/libsdl-org/SDL
+	branch = SDL2
+[submodule "extern/fmt"]
+	path = extern/fmt
+	url = https://github.com/fmtlib/fmt

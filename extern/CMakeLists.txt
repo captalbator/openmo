@@ -1,0 +1,6 @@
+add_subdirectory(glad)
+add_subdirectory(glm)
+add_subdirectory(nfd)
+add_subdirectory(pugixml)
+add_subdirectory(SDL2)
+add_subdirectory(fmt)
