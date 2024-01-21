@@ -1,5 +1,6 @@
 #pragma once
 
+#include "texture.hpp"
 namespace graphics
 {
 
@@ -39,7 +40,8 @@ public:
     ~Mesh();
 
     void setVertices(std::vector<float> vertices);
-
+    void setIndices(std::vector<uint16_t> indices);
+    void setTexture(std::unique_ptr<Texture> &texture);
     void setLayout(VertexLayout layout);
 
     void draw();
@@ -48,11 +50,14 @@ public:
 private:
     GLuint _vao;
     GLuint _vbo;
-    GLuint _ebo;
+    GLuint _ibo;
+
+    std::shared_ptr<Texture> _texture;
 
     VertexLayout _layout;
 
     std::vector<float> _vertices;
+    std::vector<uint16_t> _indices;
 };
 
 } // namespace graphics

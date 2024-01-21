@@ -2,6 +2,7 @@ set(GRAPHICS_HEADERS
 	camera.hpp
 	renderer.hpp
 	shader.hpp
+	texture.hpp
 	mesh.hpp
 	window.hpp)
 
@@ -9,6 +10,7 @@ set(GRAPHICS_SOURCES
 	camera.cpp
 	renderer.cpp
 	shader.cpp
+	texture.cpp
 	mesh.cpp
 	window.cpp)
 

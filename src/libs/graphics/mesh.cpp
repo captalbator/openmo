@@ -28,12 +28,14 @@ void VertexLayout::appendElement(uint32_t size, VertexType type)
 Mesh::Mesh()
 {
     glGenBuffers(1, &_vbo);
+    glGenBuffers(1, &_ibo);
     glGenVertexArrays(1, &_vao);
 }
 
 Mesh::~Mesh()
 {
     glDeleteBuffers(1, &_vbo);
+    glDeleteBuffers(1, &_ibo);
     glDeleteVertexArrays(1, &_vao);
 }
 
@@ -43,6 +45,15 @@ void Mesh::setVertices(std::vector<float> vertices)
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(float), &_vertices[0], GL_STATIC_DRAW);
+}
+
+void Mesh::setIndices(std::vector<uint16_t> indices)
+{
+    _indices = std::move(indices);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(uint16_t), &_indices[0],
+                 GL_STATIC_DRAW);
 }
 
 void Mesh::setLayout(VertexLayout layout)
@@ -62,14 +73,42 @@ void Mesh::setLayout(VertexLayout layout)
     glBindVertexArray(0);
 }
 
+void Mesh::setTexture(std::unique_ptr<Texture> &texture)
+{
+    _texture.reset(texture.get());
+}
+
 void Mesh::draw()
 {
+    if (_texture.get())
+        _texture->bind();
+
     glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
+    if (_indices.size() > 0)
+    {
+        glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, nullptr);
+    }
+    else
+    {
+        glDrawArrays(GL_TRIANGLES, 0, _vertices.size() / (_layout.getStride() / sizeof(float)));
+    }
 }
 
 void Mesh::drawInstanced(int count)
 {
+    if (_texture.get())
+        _texture->bind();
+
+    glBindVertexArray(_vao);
+    if (_indices.size() > 0)
+    {
+        glDrawElementsInstanced(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, nullptr, count);
+    }
+    else
+    {
+        glDrawArraysInstanced(GL_TRIANGLES, 0,
+                              _vertices.size() / (_layout.getStride() / sizeof(float)), count);
+    }
 }
 
 } // namespace graphics
