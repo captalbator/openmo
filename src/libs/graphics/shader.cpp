@@ -2,6 +2,8 @@
 #include "libs/common/log.hpp"
 #include <fstream>
 
+#include "glad/glad.h"
+
 namespace graphics
 {
 
@@ -12,7 +14,7 @@ std::string readEntireFile(std::filesystem::path filepath)
 
     if (!file_stream.is_open())
     {
-        LOG_ERROR("Could not read file {}: file does not exist", filepath.string());
+        LOG_ERROR("Could not read file {}: file does not exist", filepath.string().c_str());
         return std::string();
     }
 

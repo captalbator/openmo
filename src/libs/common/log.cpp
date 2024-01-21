@@ -3,10 +3,6 @@
 #include "fmt/chrono.h"
 #include "fmt/color.h"
 
-#ifdef __WIN32__
-#include <windows.h>
-#endif
-
 namespace common
 {
 
@@ -23,7 +19,7 @@ void Log::init()
 #endif
 }
 
-void Log::log(Severity severity, const char *fmt...)
+void Log::log(Severity severity, std::string const &fmt...)
 {
     std::time_t t = std::time(nullptr);
 

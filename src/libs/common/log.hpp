@@ -19,7 +19,7 @@ public:
 
     static void init();
 
-    static void log(Severity severity, const char *fmt...);
+    static void log(Severity severity, std::string const &fmt...);
 
 private:
 };

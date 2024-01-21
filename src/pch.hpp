@@ -13,9 +13,12 @@
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
+#include <variant>
 #include <vector>
 
-#include "fmt/core.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include "glad/glad.h"
 

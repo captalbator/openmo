@@ -1,4 +1,5 @@
 #include "libs/common/log.hpp"
+#include "libs/common/options.hpp"
 #include "libs/graphics/mesh.hpp"
 #include "libs/graphics/shader.hpp"
 #include "libs/graphics/window.hpp"
@@ -12,16 +13,32 @@ int main(int argc, char **argv)
 {
     common::Log::init();
 
-    LOG_INFO("info");
-    LOG_TRACE("trace");
-    LOG_WARN("warn");
-    LOG_ERROR("error");
-    LOG_FATAL("fatal");
-
     graphics::WindowOptions options;
-    options.title = "Gabbit";
+    options.title = "Gabbit - Level editor for Munch's Oddysee";
     options.w = 1280;
     options.h = 720;
+
+    bool printHelp = false;
+    OptionsParser opts("Gabbit - Level editor for Munch's Oddysee");
+    opts.addArgument({"-w", "--width"}, &options.w, "Set the window width");
+    opts.addArgument({"-h", "--height"}, &options.h, "Set the window height");
+    opts.addArgument({"--help"}, &printHelp, "Print the help message");
+
+    try
+    {
+        opts.parse(argc, argv);
+    }
+    catch (std::runtime_error const &e)
+    {
+        LOG_ERROR(e.what());
+        return -1;
+    }
+
+    if (printHelp)
+    {
+        opts.printHelp();
+        return 0;
+    }
 
     graphics::Window window;
     window.init(options);

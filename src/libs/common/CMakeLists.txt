@@ -1,7 +1,9 @@
 set(COMMON_HEADERS
+	options.hpp
 	log.hpp)
 
 set(COMMON_SOURCES
+	options.cpp
 	log.cpp)
 
 add_library(common STATIC ${COMMON_HEADERS} ${COMMON_SOURCES})
