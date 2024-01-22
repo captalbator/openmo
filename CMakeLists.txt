@@ -46,8 +46,10 @@ include_directories(${CMAKE_SOURCE_DIR}/extern
 
 #list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+add_subdirectory(src/libs/alive)
 add_subdirectory(src/libs/common)
 add_subdirectory(src/libs/graphics)
+add_subdirectory(src/libs/nif)
 
 if(BUILD_OPENMO)
     add_subdirectory(src/apps/openmo)

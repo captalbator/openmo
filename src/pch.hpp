@@ -3,6 +3,7 @@
 #include <cassert>
 #include <chrono>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <istream>
@@ -15,6 +16,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+
 
 #ifdef _WIN32
 #include <windows.h>
