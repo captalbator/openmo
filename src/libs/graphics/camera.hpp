@@ -132,7 +132,7 @@ private:
 
     Frustum _frustum;
 
-    float _speed{100.0f};
+    float _speed{1.0f};
     float _sensitivity{0.25f};
 
     float _fieldOfView{90.0f};

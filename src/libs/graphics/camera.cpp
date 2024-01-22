@@ -29,16 +29,16 @@ void Camera::update()
     _lookVector = look;
 
     _rightVector = -glm::normalize(glm::cross(kWorldUp, _lookVector));
-    _upVector = glm::normalize(glm::cross(-_rightVector, _lookVector));
+    _upVector = glm::normalize(glm::cross(_rightVector, _lookVector));
 
-    _viewMatrix = glm::lookAtLH(_position, _position + _lookVector, _upVector);
+    _viewMatrix = glm::lookAt(_position, _position + _lookVector, _upVector);
 
     updateFrustum();
 }
 
 void Camera::updateProjectionMatrix()
 {
-    _projectionMatrix = glm::perspectiveLH(glm::radians(_fieldOfView), _aspect, _near, _far);
+    _projectionMatrix = glm::perspective(glm::radians(_fieldOfView), _aspect, _near, _far);
     updateFrustum();
 }
 
@@ -98,11 +98,11 @@ void Camera::processMovement(float delta)
     }
     if (keystate[SDL_SCANCODE_A])
     {
-        _position += glm::normalize(glm::cross(_lookVector, _upVector)) * _speed * delta;
+        _position -= glm::normalize(glm::cross(_lookVector, _upVector)) * _speed * delta;
     }
     if (keystate[SDL_SCANCODE_D])
     {
-        _position -= glm::normalize(glm::cross(_lookVector, _upVector)) * _speed * delta;
+        _position += glm::normalize(glm::cross(_lookVector, _upVector)) * _speed * delta;
     }
 }
 
