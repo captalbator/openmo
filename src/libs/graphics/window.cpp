@@ -45,6 +45,14 @@ void Window::setTitle(std::string title)
     SDL_SetWindowTitle(_window, title.c_str());
 }
 
+void Window::setDimensions(int w, int h)
+{
+    _width = w;
+    _height = h;
+
+    glViewport(0, 0, w, h);
+}
+
 void Window::swap()
 {
     SDL_GL_SwapWindow(_window);

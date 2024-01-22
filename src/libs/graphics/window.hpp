@@ -19,12 +19,16 @@ public:
     void close();
 
     void setTitle(std::string title);
+    void setDimensions(int w, int h);
 
     void swap();
 
 private:
     SDL_Window *_window;
     SDL_GLContext _context;
+
+    int _width{1280};
+    int _height{720};
 };
 
 } // namespace graphics
