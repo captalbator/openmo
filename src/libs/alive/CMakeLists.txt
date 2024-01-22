@@ -1,8 +1,10 @@
 set(ALIVE_HEADERS
+    scene.hpp
     xinfile.hpp
     xrgfile.hpp)
 
 set(ALIVE_SOURCES
+    scene.cpp
     xinfile.cpp
     xrgfile.cpp)
 

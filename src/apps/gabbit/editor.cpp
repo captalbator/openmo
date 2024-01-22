@@ -25,7 +25,7 @@ Editor::~Editor()
 void Editor::run()
 {
     _window->init(_options.windowOpts);
-    _renderer->init();
+    _renderer->init(_options.windowOpts.w, _options.windowOpts.h);
 
     if (!_options.openFile.empty())
     {
@@ -72,12 +72,7 @@ void Editor::run()
         _camera->processMovement(deltaTime);
         _camera->update();
 
-        _renderer->preDraw();
-
-        _renderer->draw(_camera.get());
-        _scene->draw();
-
-        _renderer->postDraw();
+        _renderer->draw(_camera.get(), _scene.get());
 
         _window->swap();
     }

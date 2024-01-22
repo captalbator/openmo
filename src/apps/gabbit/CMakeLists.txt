@@ -1,10 +1,8 @@
 set(GABBIT_HEADERS 
-    scene.hpp
     editor.hpp)
 
 set(GABBIT_SOURCES
     editor.cpp
-    scene.cpp
     main.cpp)
 
 add_executable(gabbit ${GABBIT_SOURCES} ${GABBIT_HEADERS})

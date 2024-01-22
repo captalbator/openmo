@@ -1,9 +1,9 @@
 #pragma once
 
+#include "libs/alive/scene.hpp"
 #include "libs/graphics/camera.hpp"
 #include "libs/graphics/renderer.hpp"
 #include "libs/graphics/window.hpp"
-#include "scene.hpp"
 
 struct EditorOptions
 {

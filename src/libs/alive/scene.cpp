@@ -119,6 +119,7 @@ void Scene::loadRegion(std::filesystem::path path)
 
             graphics::Texture *meshTexture = nullptr;
 
+            bool hasAlpha = false;
             for (const auto &property : triShape->properties)
             {
                 auto ptr = property.ptr();
@@ -129,6 +130,11 @@ void Scene::loadRegion(std::filesystem::path path)
                     {
                         meshTexture = possibleTexture->second.get();
                     }
+                }
+
+                if (ptr->typeName == "NiAlphaProperty")
+                {
+                    hasAlpha = true;
                 }
             }
 
@@ -179,7 +185,21 @@ void Scene::loadRegion(std::filesystem::path path)
 
             mesh->setLayout(layout);
 
-            _sceneMeshes.push_back(std::move(mesh));
+            if (triShapeData->hasNormals)
+            {
+                if (hasAlpha)
+                {
+                    _alphaMeshes.push_back(std::move(mesh));
+                }
+                else
+                {
+                    _opaqueMeshes.push_back(std::move(mesh));
+                }
+            }
+            else
+            {
+                _navMeshes.push_back(std::move(mesh));
+            }
         }
     }
 }
@@ -191,12 +211,34 @@ void Scene::clear()
     _xrg.reset(nullptr);
 }
 
-void Scene::draw()
+void Scene::drawOpaque()
 {
     if (!_xin)
         return;
 
-    for (const auto &mesh : _sceneMeshes)
+    for (const auto &mesh : _opaqueMeshes)
+    {
+        mesh->draw();
+    }
+}
+
+void Scene::drawTransparent()
+{
+    if (!_xin)
+        return;
+
+    for (const auto &mesh : _alphaMeshes)
+    {
+        mesh->draw();
+    }
+}
+
+void Scene::drawNavMeshes()
+{
+    if (!_xin)
+        return;
+
+    for (const auto &mesh : _navMeshes)
     {
         mesh->draw();
     }

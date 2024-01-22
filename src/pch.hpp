@@ -17,12 +17,11 @@
 #include <variant>
 #include <vector>
 
-
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-#include "glad/glad.h"
+#include "glad/gl.h"
 
 #include "SDL.h"
 #include "SDL_events.h"

@@ -8,8 +8,8 @@ void Window::init(WindowOptions options)
 {
     SDL_Init(SDL_INIT_VIDEO);
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     _window = SDL_CreateWindow(options.title.c_str(), SDL_WINDOWPOS_UNDEFINED,
@@ -21,7 +21,7 @@ void Window::init(WindowOptions options)
     _context = SDL_GL_CreateContext(_window);
     LOG_ASSERT(_context != NULL, "Failed to create gl context: {}", SDL_GetError());
 
-    int version = gladLoadGLLoader(SDL_GL_GetProcAddress);
+    int version = gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
     LOG_ASSERT(version != 0, "Failed to load glad");
 
     LOG_TRACE("GL Vendor: {}", (const char *)glGetString(GL_VENDOR));

@@ -24,8 +24,8 @@ int main(int argc, char **argv)
     tri.setVertices(std::vector<float>(std::begin(triData), std::end(triData)));
 
     graphics::VertexLayout triLayout;
-    triLayout.appendElement(3, graphics::VertexType::FLOAT);
-    triLayout.appendElement(3, graphics::VertexType::FLOAT);
+    triLayout.addElement(0, 3, graphics::VertexType::FLOAT);
+    triLayout.addElement(1, 3, graphics::VertexType::FLOAT);
 
     tri.setLayout(triLayout);
 
