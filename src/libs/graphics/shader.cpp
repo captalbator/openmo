@@ -1,8 +1,5 @@
 #include "shader.hpp"
 #include "libs/common/log.hpp"
-#include <fstream>
-
-#include "glad/glad.h"
 
 namespace graphics
 {
@@ -14,7 +11,7 @@ std::string readEntireFile(std::filesystem::path filepath)
 
     if (!file_stream.is_open())
     {
-        LOG_ERROR("Could not read file {}: file does not exist", filepath.string().c_str());
+        LOG_ERROR("Could not read file {} : file does not exist", filepath.string().c_str());
         return std::string();
     }
 
@@ -140,6 +137,69 @@ void ShaderProgram::use()
 void ShaderProgram::destroy()
 {
     glDeleteProgram(_id);
+}
+
+void ShaderProgram::setUniform(const std::string &name, int value)
+{
+    this->setUniform(name, [this, &value](int location) { glUniform1i(location, value); });
+}
+
+void ShaderProgram::setUniform(const std::string &name, bool value)
+{
+    this->setUniform(name, [this, &value](int location) { glUniform1i(location, (int)value); });
+}
+
+void ShaderProgram::setUniform(const std::string &name, float value)
+{
+    this->setUniform(name, [this, &value](int location) { glUniform1f(location, value); });
+}
+
+void ShaderProgram::setUniform(const std::string &name, const glm::vec2 &value)
+{
+    this->setUniform(name,
+                     [this, &value](int location) { glUniform2f(location, value.x, value.y); });
+}
+
+void ShaderProgram::setUniform(const std::string &name, const glm::vec3 &value)
+{
+    this->setUniform(name, [this, &value](int location)
+                     { glUniform3f(location, value.x, value.y, value.z); });
+}
+
+void ShaderProgram::setUniform(const std::string &name, const glm::mat4 &value)
+{
+    this->setUniform(name, [this, &value](int location)
+                     { glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value)); });
+}
+
+void ShaderProgram::setUniform(const std::string &name, const std::vector<glm::mat4> &arr)
+{
+    setUniform(name,
+               [this, &arr](int location)
+               {
+                   glUniformMatrix4fv(location, static_cast<GLsizei>(arr.size()), GL_FALSE,
+                                      reinterpret_cast<const GLfloat *>(&arr[0]));
+               });
+}
+
+void ShaderProgram::setUniform(const std::string &name, const std::function<void(int)> setter)
+{
+    GLuint location;
+    auto possibleLocation = _uniformLocations.find(name);
+    if (possibleLocation != _uniformLocations.end())
+    {
+        location = possibleLocation->second;
+    }
+    else
+    {
+        location = glGetUniformLocation(_id, name.c_str());
+        _uniformLocations.insert(std::make_pair(name, location));
+    }
+
+    if (location != -1)
+    {
+        setter(location);
+    }
 }
 
 } // namespace graphics

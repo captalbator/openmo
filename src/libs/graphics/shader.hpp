@@ -41,10 +41,18 @@ public:
 
     void destroy();
 
-    // TODO: Add shader program management
+    void setUniform(const std::string &name, int value);
+    void setUniform(const std::string &name, bool value);
+    void setUniform(const std::string &name, float value);
+    void setUniform(const std::string &name, const glm::vec2 &value);
+    void setUniform(const std::string &name, const glm::vec3 &value);
+    void setUniform(const std::string &name, const glm::mat4 &value);
+    void setUniform(const std::string &name, const std::vector<glm::mat4> &arr);
+    void setUniform(const std::string &name, const std::function<void(int)> setter);
 
 private:
     GLuint _id{0};
+    std::map<std::string, int> _uniformLocations;
 };
 
 } // namespace graphics
