@@ -86,10 +86,12 @@ static uint32_t getFilterGL(Texture::FilterMode filter)
 Texture::Texture()
 {
     glGenTextures(1, &_id);
+    glBindTexture(GL_TEXTURE_2D, _id);
 }
 
 Texture::~Texture()
 {
+    _pixels.clear();
     glDeleteTextures(1, &_id);
 }
 
@@ -105,10 +107,9 @@ void Texture::setFilterMode(FilterMode min, FilterMode mag)
     _magFilter = mag;
 }
 
-void Texture::setWrapMode(WrapMode s, WrapMode t)
+void Texture::setWrapMode(WrapMode wrap)
 {
-    _wrapS = s;
-    _wrapT = t;
+    _wrap = wrap;
 }
 
 void Texture::setPixels(int w, int h, Format format, std::vector<uint8_t> pixels, bool refresh)
@@ -121,6 +122,27 @@ void Texture::setPixels(int w, int h, Format format, std::vector<uint8_t> pixels
 
     if (refresh)
         this->refresh();
+}
+
+void Texture::configure()
+{
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, getFilterGL(_minFilter));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getFilterGL(_magFilter));
+
+    switch (_wrap)
+    {
+    case WrapMode::CLAMP_TO_BORDER:
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        break;
+    case WrapMode::CLAMP_TO_EDGE:
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        break;
+    case WrapMode::REPEAT:
+    default:
+        break;
+    }
 }
 
 void Texture::refresh()
@@ -137,6 +159,8 @@ void Texture::refresh()
                      getPixelFormatGL(_format), getPixelTypeGL(_format), _pixels.data());
         break;
     }
+
+    glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 } // namespace graphics

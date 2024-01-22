@@ -37,6 +37,7 @@ public:
 
     enum class WrapMode
     {
+        CLAMP_TO_BORDER,
         CLAMP_TO_EDGE,
         REPEAT,
     };
@@ -47,17 +48,17 @@ public:
     void bind();
 
     void setFilterMode(FilterMode min, FilterMode mag);
-    void setWrapMode(WrapMode s, WrapMode t);
+    void setWrapMode(WrapMode wrap);
 
     void setPixels(int w, int h, Format format, std::vector<uint8_t> pixels, bool refresh = false);
 
     void refresh();
+    void configure();
 
 private:
     GLuint _id;
 
-    WrapMode _wrapS{WrapMode::CLAMP_TO_EDGE};
-    WrapMode _wrapT{WrapMode::CLAMP_TO_EDGE};
+    WrapMode _wrap{WrapMode::REPEAT};
     Format _format{Format::RGBA8};
     FilterMode _minFilter{FilterMode::LINEAR};
     FilterMode _magFilter{FilterMode::LINEAR};
