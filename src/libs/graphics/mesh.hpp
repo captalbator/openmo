@@ -16,6 +16,7 @@ public:
     struct Element
     {
         uint32_t offset;
+        uint32_t size;
         uint32_t location;
         GLenum type;
     };
@@ -23,7 +24,7 @@ public:
     VertexLayout() {}
     ~VertexLayout() {}
 
-    void appendElement(uint32_t size, VertexType type);
+    void addElement(uint32_t location, uint32_t size, VertexType type);
 
     int getStride() const { return _stride; }
     const std::vector<Element> &getElements() const { return _elements; }
@@ -41,7 +42,7 @@ public:
 
     void setVertices(std::vector<float> vertices);
     void setIndices(std::vector<uint16_t> indices);
-    void setTexture(std::unique_ptr<Texture> &texture);
+    void setTexture(Texture *texture);
     void setLayout(VertexLayout layout);
 
     void draw();
@@ -52,7 +53,7 @@ private:
     GLuint _vbo;
     GLuint _ibo;
 
-    std::shared_ptr<Texture> _texture;
+    Texture *_texture{nullptr};
 
     VertexLayout _layout;
 
