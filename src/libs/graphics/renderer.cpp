@@ -42,6 +42,14 @@ void Renderer::init(int scrWidth, int scrHeight)
     screenFrag->setSource("assets/shaders/screen.frag");
     screenFrag->compile();
 
+    auto pickingVert = std::make_unique<Shader>(ShaderType::VERTEX);
+    pickingVert->setSource("assets/shaders/picking.vert");
+    pickingVert->compile();
+
+    auto pickingFrag = std::make_unique<Shader>(ShaderType::FRAGMENT);
+    pickingFrag->setSource("assets/shaders/picking.frag");
+    pickingFrag->compile();
+
     _solidShader = std::make_unique<ShaderProgram>();
     _solidShader->attach(geomVert.get());
     _solidShader->attach(solidFrag.get());
@@ -62,8 +70,14 @@ void Renderer::init(int scrWidth, int scrHeight)
     _screenShader->attach(screenFrag.get());
     _screenShader->link();
 
+    _pickingShader = std::make_unique<ShaderProgram>();
+    _pickingShader->attach(pickingVert.get());
+    _pickingShader->attach(pickingFrag.get());
+    _pickingShader->link();
+
     glGenFramebuffers(1, &_opaqueFBO);
     glGenFramebuffers(1, &_transparentFBO);
+    glGenFramebuffers(1, &_pickingFBO);
 
     // Setup opaque texture
     glGenTextures(1, &_opaqueTexture);
@@ -80,6 +94,24 @@ void Renderer::init(int scrWidth, int scrHeight)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, scrWidth, scrHeight, 0, GL_DEPTH_COMPONENT,
                  GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Setup picking texture
+    glGenTextures(1, &_pickingTexture);
+    glBindTexture(GL_TEXTURE_2D, _pickingTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI, scrWidth, scrHeight, 0, GL_RGB_INTEGER,
+                 GL_UNSIGNED_INT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, _pickingFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _pickingTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        LOG_ERROR("PICKING FRAMEBUFFER ISN'T COMPLETE!");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, _opaqueFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _opaqueTexture, 0);
@@ -134,6 +166,43 @@ void Renderer::close()
 {
 }
 
+unsigned int Renderer::pick(Camera *camera, Scene *scene, int x, int y)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, _pickingFBO);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    _pickingShader->use();
+
+    _pickingShader->setUniform("uModel", model);
+    _pickingShader->setUniform("uView", camera->getViewMatrix());
+    _pickingShader->setUniform("uProjection", camera->getProjectionMatrix());
+
+    auto sceneObjects = scene->getSceneObjects();
+    for (unsigned int i = 0; i < sceneObjects.size(); i++)
+    {
+        const auto &obj = sceneObjects[i];
+        _pickingShader->setUniform("uObjectIndex", i + 1);
+        obj.mesh->draw();
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, _pickingFBO);
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+    // read picking texture to get object id
+    unsigned int values[4];
+    glReadPixels(x, y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &values);
+
+    glReadBuffer(GL_NONE);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+    return values[0];
+}
+
 void Renderer::draw(Camera *camera, Scene *scene)
 {
     // Opaque pass
@@ -186,7 +255,6 @@ void Renderer::draw(Camera *camera, Scene *scene)
     // Composite pass
     glDepthFunc(GL_ALWAYS);
     glEnable(GL_BLEND);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);

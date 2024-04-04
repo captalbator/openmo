@@ -54,6 +54,9 @@ public:
 
     void refresh();
     void configure();
+    void generateMipmap();
+
+    GLuint getId() const { return _id; }
 
 private:
     GLuint _id;

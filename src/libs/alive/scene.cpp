@@ -4,6 +4,101 @@
 #include "libs/nif/geom.hpp"
 #include "libs/nif/shaders.hpp"
 
+graphics::Texture *
+Scene::getSceneTextureFromTexturingProperty(nif::NiTexturingProperty *texturingProperty)
+{
+    graphics::Texture *ret;
+
+    auto possibleTexture = _sceneTextures.find(texturingProperty->index);
+    if (possibleTexture != _sceneTextures.end())
+    {
+        ret = possibleTexture->second.get();
+    }
+    else
+    {
+        nif::TexDesc &texDesc = texturingProperty->textures[0];
+
+        auto texture = std::make_unique<graphics::Texture>();
+
+        switch (texDesc.clampMode)
+        {
+        case nif::CLAMP_S_CLAMP_T:
+            texture->setWrapMode(graphics::Texture::WrapMode::CLAMP_TO_EDGE);
+            break;
+        default:
+            break;
+        }
+
+        switch (texDesc.filterMode)
+        {
+        case nif::FILTER_NEAREST:
+            texture->setFilterMode(graphics::Texture::FilterMode::NEAREST,
+                                   graphics::Texture::FilterMode::NEAREST);
+            break;
+        case nif::FILTER_BILERP:
+            texture->setFilterMode(graphics::Texture::FilterMode::LINEAR,
+                                   graphics::Texture::FilterMode::LINEAR);
+            break;
+        case nif::FILTER_TRILERP:
+            texture->setFilterMode(graphics::Texture::FilterMode::LINEAR_MIPMAP_LINEAR,
+                                   graphics::Texture::FilterMode::LINEAR);
+            break;
+        case nif::FILTER_NEAREST_MIPNEAREST:
+            texture->setFilterMode(graphics::Texture::FilterMode::NEAREST_MIPMAP_NEAREST,
+                                   graphics::Texture::FilterMode::NEAREST);
+            break;
+        case nif::FILTER_NEAREST_MIPLERP:
+            texture->setFilterMode(graphics::Texture::FilterMode::NEAREST_MIPMAP_LINEAR,
+                                   graphics::Texture::FilterMode::NEAREST);
+            break;
+        case nif::FILTER_BILERP_MIPNEAREST:
+            texture->setFilterMode(graphics::Texture::FilterMode::NEAREST_MIPMAP_NEAREST,
+                                   graphics::Texture::FilterMode::LINEAR);
+            break;
+        default:
+            break;
+        }
+
+        nif::NiSourceTexture *sourceTexture = texDesc.textureSource.ptr();
+        nif::NiPixelData *pixelData = sourceTexture->textureData.ptr();
+
+        graphics::Texture::Format format = graphics::Texture::Format::RGBA8;
+        switch (pixelData->pixelFormat)
+        {
+        case nif::FMT_RGB:
+            format = graphics::Texture::Format::RGB8;
+            break;
+        case nif::FMT_RGBA:
+            format = graphics::Texture::Format::RGBA8;
+            break;
+        case nif::FMT_DXT1:
+        case nif::FMT_DXT3:
+            format = graphics::Texture::Format::DXT1;
+            break;
+        case nif::FMT_DXT5:
+            format = graphics::Texture::Format::DXT5;
+            break;
+        default:
+            LOG_WARN("unknown texture format {}", (uint32_t)pixelData->pixelFormat);
+            break;
+        }
+
+        texture->configure();
+
+        auto mipmap = pixelData->mipmaps[0];
+
+        texture->setPixels(mipmap.width, mipmap.height, format, pixelData->data, true);
+        texture->generateMipmap();
+
+        _sceneTextures.insert(std::make_pair(texturingProperty->index, std::move(texture)));
+
+        auto possibleTexture = _sceneTextures.find(texturingProperty->index);
+        ret = possibleTexture->second.get();
+    }
+
+    return ret;
+}
+
 void Scene::loadRegion(std::filesystem::path path)
 {
     _xrg = std::make_unique<alive::XrgFile>(path);
@@ -24,88 +119,6 @@ void Scene::loadRegion(std::filesystem::path path)
     nif::NifReader reader(*_sceneGraph);
     reader.parse(std::move(stream));
 
-    for (const auto &block : _sceneGraph->blocks)
-    {
-        if (block->typeName == "NiTexturingProperty")
-        {
-            auto texturingProperty = static_cast<nif::NiTexturingProperty *>(block.get());
-            nif::TexDesc &texDesc = texturingProperty->textures[0];
-
-            auto texture = std::make_unique<graphics::Texture>();
-
-            switch (texDesc.clampMode)
-            {
-            case nif::CLAMP_S_CLAMP_T:
-                texture->setWrapMode(graphics::Texture::WrapMode::CLAMP_TO_EDGE);
-                break;
-            default:
-                break;
-            }
-
-            switch (texDesc.filterMode)
-            {
-            case nif::FILTER_NEAREST:
-                texture->setFilterMode(graphics::Texture::FilterMode::NEAREST,
-                                       graphics::Texture::FilterMode::NEAREST);
-                break;
-            case nif::FILTER_BILERP:
-                texture->setFilterMode(graphics::Texture::FilterMode::LINEAR,
-                                       graphics::Texture::FilterMode::LINEAR);
-                break;
-            case nif::FILTER_TRILERP:
-                texture->setFilterMode(graphics::Texture::FilterMode::LINEAR_MIPMAP_LINEAR,
-                                       graphics::Texture::FilterMode::LINEAR);
-                break;
-            case nif::FILTER_NEAREST_MIPNEAREST:
-                texture->setFilterMode(graphics::Texture::FilterMode::NEAREST_MIPMAP_NEAREST,
-                                       graphics::Texture::FilterMode::NEAREST);
-                break;
-            case nif::FILTER_NEAREST_MIPLERP:
-                texture->setFilterMode(graphics::Texture::FilterMode::NEAREST_MIPMAP_LINEAR,
-                                       graphics::Texture::FilterMode::NEAREST);
-                break;
-            case nif::FILTER_BILERP_MIPNEAREST:
-                texture->setFilterMode(graphics::Texture::FilterMode::NEAREST_MIPMAP_NEAREST,
-                                       graphics::Texture::FilterMode::LINEAR);
-                break;
-            default:
-                break;
-            }
-
-            nif::NiSourceTexture *sourceTexture = texDesc.textureSource.ptr();
-            nif::NiPixelData *pixelData = sourceTexture->textureData.ptr();
-
-            graphics::Texture::Format format = graphics::Texture::Format::RGBA8;
-            switch (pixelData->pixelFormat)
-            {
-            case nif::FMT_RGB:
-                format = graphics::Texture::Format::RGB8;
-                break;
-            case nif::FMT_RGBA:
-                format = graphics::Texture::Format::RGBA8;
-                break;
-            case nif::FMT_DXT1:
-            case nif::FMT_DXT3:
-                format = graphics::Texture::Format::DXT1;
-                break;
-            case nif::FMT_DXT5:
-                format = graphics::Texture::Format::DXT5;
-                break;
-            default:
-                LOG_WARN("unknown texture format {}", (uint32_t)pixelData->pixelFormat);
-                break;
-            }
-
-            texture->configure();
-
-            auto mipmap = pixelData->mipmaps[0];
-
-            texture->setPixels(mipmap.width, mipmap.height, format, pixelData->data, true);
-
-            _sceneTextures.insert(std::make_pair(texturingProperty->index, std::move(texture)));
-        }
-    }
-
     // Load scene meshes
     for (const auto &block : _sceneGraph->blocks)
     {
@@ -125,11 +138,8 @@ void Scene::loadRegion(std::filesystem::path path)
                 auto ptr = property.ptr();
                 if (ptr->typeName == "NiTexturingProperty")
                 {
-                    auto possibleTexture = _sceneTextures.find(ptr->index);
-                    if (possibleTexture != _sceneTextures.end())
-                    {
-                        meshTexture = possibleTexture->second.get();
-                    }
+                    meshTexture = getSceneTextureFromTexturingProperty(
+                        static_cast<nif::NiTexturingProperty *>(ptr));
                 }
 
                 if (ptr->typeName == "NiAlphaProperty")
@@ -185,6 +195,13 @@ void Scene::loadRegion(std::filesystem::path path)
 
             mesh->setLayout(layout);
 
+            Object obj = {};
+            obj.isNif = true;
+            obj.niObject = block.get();
+            obj.mesh = mesh.get();
+
+            _sceneObjects.push_back(std::move(obj));
+
             if (triShapeData->hasNormals)
             {
                 if (hasAlpha)
@@ -209,6 +226,17 @@ void Scene::clear()
     _sceneGraph.reset(nullptr);
     _xin.reset(nullptr);
     _xrg.reset(nullptr);
+}
+
+void Scene::drawAll()
+{
+    if (!_xin)
+        return;
+
+    for (const auto &obj : _sceneObjects)
+    {
+        obj.mesh->draw();
+    }
 }
 
 void Scene::drawOpaque()
@@ -242,4 +270,10 @@ void Scene::drawNavMeshes()
     {
         mesh->draw();
     }
+}
+
+void Scene::selectObject(int objectId)
+{
+    LOG_INFO("Selected object id {}", objectId);
+    _selectedObject = objectId;
 }

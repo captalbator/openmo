@@ -3,6 +3,44 @@
 namespace graphics
 {
 
+static uint32_t getInternalPixelFormatGL(Texture::Format format)
+{
+    switch (format)
+    {
+    case Texture::Format::R8:
+        return GL_R8;
+    case Texture::Format::R16F:
+        return GL_R16F;
+    case Texture::Format::RG8:
+        return GL_RG8;
+    case Texture::Format::RG16F:
+        return GL_RG16F;
+    case Texture::Format::RGB8:
+    case Texture::Format::BGR8:
+        return GL_RGB8;
+    case Texture::Format::RGB16F:
+        return GL_RGB16F;
+    case Texture::Format::RGBA8:
+    case Texture::Format::BGRA8:
+        return GL_RGBA;
+    case Texture::Format::RGBA16F:
+        return GL_RGBA16F;
+    case Texture::Format::DXT1:
+        return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+    case Texture::Format::DXT5:
+        return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    case Texture::Format::Depth24:
+        return GL_DEPTH_COMPONENT24;
+    case Texture::Format::Depth32F:
+        return GL_DEPTH_COMPONENT32F;
+    case Texture::Format::Depth32FStencil8:
+        return GL_DEPTH32F_STENCIL8;
+    default:
+        throw std::invalid_argument("Invalid pixel format \"" +
+                                    std::to_string(static_cast<int>(format)) + "\"");
+    }
+}
+
 static uint32_t getPixelFormatGL(Texture::Format format)
 {
     switch (format)
@@ -53,6 +91,7 @@ static uint32_t getPixelTypeGL(Texture::Format format)
     case Texture::Format::RG16F:
     case Texture::Format::RGB16F:
     case Texture::Format::RGBA16F:
+        return GL_HALF_FLOAT;
     case Texture::Format::Depth32F:
         return GL_FLOAT;
     case Texture::Format::Depth32FStencil8:
@@ -97,7 +136,7 @@ Texture::~Texture()
 
 void Texture::bind()
 {
-    glActiveTexture(GL_TEXTURE0);
+    // glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _id);
 }
 
@@ -151,15 +190,18 @@ void Texture::refresh()
     {
     case Format::DXT1:
     case Format::DXT5:
-        glCompressedTexImage2D(GL_TEXTURE_2D, 0, getPixelFormatGL(_format), _width, _height, 0,
-                               _pixels.size(), _pixels.data());
+        glCompressedTexImage2D(GL_TEXTURE_2D, 0, getInternalPixelFormatGL(_format), _width, _height,
+                               0, _pixels.size(), _pixels.data());
         break;
     default:
-        glTexImage2D(GL_TEXTURE_2D, 0, getPixelFormatGL(_format), _width, _height, 0,
+        glTexImage2D(GL_TEXTURE_2D, 0, getInternalPixelFormatGL(_format), _width, _height, 0,
                      getPixelFormatGL(_format), getPixelTypeGL(_format), _pixels.data());
         break;
     }
+}
 
+void Texture::generateMipmap()
+{
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 

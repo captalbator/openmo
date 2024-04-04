@@ -144,6 +144,11 @@ void ShaderProgram::setUniform(const std::string &name, int value)
     this->setUniform(name, [this, &value](int location) { glUniform1i(location, value); });
 }
 
+void ShaderProgram::setUniform(const std::string &name, unsigned int value)
+{
+    this->setUniform(name, [this, &value](int location) { glUniform1ui(location, value); });
+}
+
 void ShaderProgram::setUniform(const std::string &name, bool value)
 {
     this->setUniform(name, [this, &value](int location) { glUniform1i(location, (int)value); });

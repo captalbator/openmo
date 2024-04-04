@@ -64,6 +64,8 @@ void Editor::run()
             case SDL_MOUSEWHEEL:
                 handleMouseWheelEvent(e.wheel);
                 break;
+            case SDL_MOUSEBUTTONDOWN:
+                handleMouseClickEvent(e.button);
             default:
                 break;
             }
@@ -71,6 +73,16 @@ void Editor::run()
 
         _camera->processMovement(deltaTime);
         _camera->update();
+
+        if (_pointerState.isDown)
+        {
+            LOG_INFO("MOUSE CLICKED AT {}, {}", _pointerState.x, _pointerState.y);
+            _pointerState.isDown = false;
+
+            unsigned int objectId =
+                _renderer->pick(_camera.get(), _scene.get(), _pointerState.x, _pointerState.y);
+            _scene->selectObject(objectId - 1);
+        }
 
         _renderer->draw(_camera.get(), _scene.get());
 
@@ -97,4 +109,14 @@ void Editor::handleMouseMotionEvent(SDL_MouseMotionEvent &event)
 void Editor::handleMouseWheelEvent(SDL_MouseWheelEvent &event)
 {
     _camera->processMovement(event.y);
+}
+
+void Editor::handleMouseClickEvent(SDL_MouseButtonEvent &event)
+{
+    if (event.button == SDL_BUTTON_LEFT)
+    {
+        _pointerState.isDown = true;
+        _pointerState.x = event.x;
+        _pointerState.y = event.y;
+    }
 }

@@ -25,9 +25,17 @@ public:
 
     void handleMouseMotionEvent(SDL_MouseMotionEvent &event);
     void handleMouseWheelEvent(SDL_MouseWheelEvent &event);
+    void handleMouseClickEvent(SDL_MouseButtonEvent &event);
 
 private:
     EditorOptions _options;
+
+    struct
+    {
+        bool isDown{false};
+        int x{0};
+        int y{0};
+    } _pointerState;
 
     std::unique_ptr<graphics::Window> _window;
     std::unique_ptr<graphics::Renderer> _renderer;
