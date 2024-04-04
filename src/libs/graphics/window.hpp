@@ -23,6 +23,9 @@ public:
 
     void swap();
 
+    SDL_Window *getWindow() const { return _window; }
+    SDL_GLContext getContext() const { return _context; }
+
 private:
     SDL_Window *_window;
     SDL_GLContext _context;

@@ -26,8 +26,12 @@ public:
     void handleMouseMotionEvent(SDL_MouseMotionEvent &event);
     void handleMouseWheelEvent(SDL_MouseWheelEvent &event);
     void handleMouseClickEvent(SDL_MouseButtonEvent &event);
+    void handleWindowEvent(SDL_WindowEvent &event);
 
 private:
+    void drawMenuBar();
+    void drawSceneView();
+
     EditorOptions _options;
 
     struct
@@ -36,6 +40,8 @@ private:
         int x{0};
         int y{0};
     } _pointerState;
+
+    bool appFocused;
 
     std::unique_ptr<graphics::Window> _window;
     std::unique_ptr<graphics::Renderer> _renderer;

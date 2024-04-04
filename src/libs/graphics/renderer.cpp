@@ -12,8 +12,11 @@ static const float quadVertices[] = {
     -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f, 1.0f,  1.0f,  0.0f, 1.0f, 1.0f,
     1.0f,  1.0f,  0.0f, 1.0f, 1.0f, -1.0f, 1.0f,  0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f};
 
-void Renderer::init(int scrWidth, int scrHeight)
+void Renderer::init(int viewWidth, int viewHeight)
 {
+    _viewportSize.x = viewWidth;
+    _viewportSize.y = viewHeight;
+
     auto geomVert = std::make_unique<Shader>(ShaderType::VERTEX);
     geomVert->setSource("assets/shaders/geom.vert");
     geomVert->compile();
@@ -78,11 +81,12 @@ void Renderer::init(int scrWidth, int scrHeight)
     glGenFramebuffers(1, &_opaqueFBO);
     glGenFramebuffers(1, &_transparentFBO);
     glGenFramebuffers(1, &_pickingFBO);
+    glGenFramebuffers(1, &_finalFBO);
 
     // Setup opaque texture
     glGenTextures(1, &_opaqueTexture);
     glBindTexture(GL_TEXTURE_2D, _opaqueTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, scrWidth, scrHeight, 0, GL_RGBA, GL_HALF_FLOAT,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, viewWidth, viewHeight, 0, GL_RGBA, GL_HALF_FLOAT,
                  NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -91,14 +95,14 @@ void Renderer::init(int scrWidth, int scrHeight)
     // Setup depth texture
     glGenTextures(1, &_depthTexture);
     glBindTexture(GL_TEXTURE_2D, _depthTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, scrWidth, scrHeight, 0, GL_DEPTH_COMPONENT,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, viewWidth, viewHeight, 0, GL_DEPTH_COMPONENT,
                  GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Setup picking texture
     glGenTextures(1, &_pickingTexture);
     glBindTexture(GL_TEXTURE_2D, _pickingTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI, scrWidth, scrHeight, 0, GL_RGB_INTEGER,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI, viewWidth, viewHeight, 0, GL_RGB_INTEGER,
                  GL_UNSIGNED_INT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -125,7 +129,7 @@ void Renderer::init(int scrWidth, int scrHeight)
     // Setup accum & reveal for transparent fbo
     glGenTextures(1, &_accumTexture);
     glBindTexture(GL_TEXTURE_2D, _accumTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, scrWidth, scrHeight, 0, GL_RGBA, GL_HALF_FLOAT,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, viewWidth, viewHeight, 0, GL_RGBA, GL_HALF_FLOAT,
                  NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -133,7 +137,7 @@ void Renderer::init(int scrWidth, int scrHeight)
 
     glGenTextures(1, &_revealTexture);
     glBindTexture(GL_TEXTURE_2D, _revealTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, scrWidth, scrHeight, 0, GL_RED, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, viewWidth, viewHeight, 0, GL_RED, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -152,6 +156,19 @@ void Renderer::init(int scrWidth, int scrHeight)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // create render texture and framebuffer
+    glGenTextures(1, &_finalTexture);
+    glBindTexture(GL_TEXTURE_2D, _finalTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, viewWidth, viewHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, _finalFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _finalTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     _quadMesh = std::make_unique<Mesh>();
     _quadMesh->setVertices(std::vector<float>(std::begin(quadVertices), std::end(quadVertices)));
 
@@ -164,6 +181,36 @@ void Renderer::init(int scrWidth, int scrHeight)
 
 void Renderer::close()
 {
+}
+
+void Renderer::updateViewportSize(int w, int h)
+{
+    _viewportSize.x = w;
+    _viewportSize.y = h;
+
+    glBindTexture(GL_TEXTURE_2D, _opaqueTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, _depthTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, _pickingTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI, w, h, 0, GL_RGB_INTEGER, GL_UNSIGNED_INT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, _accumTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, _revealTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, w, h, 0, GL_RED, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, _finalTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 unsigned int Renderer::pick(Camera *camera, Scene *scene, int x, int y)
@@ -211,6 +258,7 @@ void Renderer::draw(Camera *camera, Scene *scene)
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glViewport(0, 0, _viewportSize.x, _viewportSize.y);
 
     // glCullFace(GL_FRONT);
     glEnable(GL_CULL_FACE);
@@ -275,8 +323,8 @@ void Renderer::draw(Camera *camera, Scene *scene)
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
 
-    // Bind backbuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // Bind final buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, _finalFBO);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -286,6 +334,8 @@ void Renderer::draw(Camera *camera, Scene *scene)
     glBindTexture(GL_TEXTURE_2D, _opaqueTexture);
 
     _quadMesh->draw();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 } // namespace graphics

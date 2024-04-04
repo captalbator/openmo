@@ -31,7 +31,7 @@ void Window::init(WindowOptions options)
     SDL_GL_MakeCurrent(_window, _context);
     SDL_GL_SetSwapInterval(1);
 
-    glViewport(0, 0, options.w, options.h);
+    // glViewport(0, 0, options.w, options.h);
 }
 
 void Window::close()
@@ -50,7 +50,7 @@ void Window::setDimensions(int w, int h)
     _width = w;
     _height = h;
 
-    glViewport(0, 0, w, h);
+    // glViewport(0, 0, w, h);
 }
 
 void Window::swap()
