@@ -11,36 +11,41 @@
 class Scene
 {
 public:
-    Scene() {}
-    ~Scene() {}
+  Scene() {}
+  ~Scene() {}
 
-    void loadRegion(std::filesystem::path path);
-    void clear();
+  void loadRegion(std::filesystem::path path);
+  void clear();
 
-    void drawAll();
-    void drawOpaque();
-    void drawTransparent();
-    void drawNavMeshes();
+  void drawAll();
+  void drawOpaque();
+  void drawTransparent();
+  void drawNavMeshes();
 
-    void selectObject(int objectId);
+  void selectObject(int objectId);
+  int getSelectedObject() const { return _selectedObject; }
 
-    const std::vector<Object> getSceneObjects() const { return _sceneObjects; }
+  std::vector<Object> getSceneObjects() const { return _sceneObjects; }
+
+  bool isLoaded() const { return _isLoaded; }
+  nif::NifFile *getSceneGraph() const { return _sceneGraph.get(); }
 
 private:
-    graphics::Texture *getSceneTextureFromTexturingProperty(nif::NiTexturingProperty *ptr);
+  bool _isLoaded{false};
+  graphics::Texture *getSceneTextureFromTexturingProperty(nif::NiTexturingProperty *ptr);
 
-    std::unique_ptr<alive::XinFile> _xin;
-    std::unique_ptr<alive::XrgFile> _xrg;
+  std::unique_ptr<alive::XinFile> _xin;
+  std::unique_ptr<alive::XrgFile> _xrg;
 
-    std::unique_ptr<nif::NifFile> _sceneGraph;
+  std::unique_ptr<nif::NifFile> _sceneGraph;
 
-    std::map<uint32_t, std::unique_ptr<graphics::Texture>> _sceneTextures;
+  std::map<uint32_t, std::unique_ptr<graphics::Texture>> _sceneTextures;
 
-    std::vector<std::unique_ptr<graphics::Mesh>> _opaqueMeshes;
-    std::vector<std::unique_ptr<graphics::Mesh>> _alphaMeshes;
-    std::vector<std::unique_ptr<graphics::Mesh>> _navMeshes;
+  std::vector<std::unique_ptr<graphics::Mesh>> _opaqueMeshes;
+  std::vector<std::unique_ptr<graphics::Mesh>> _alphaMeshes;
+  std::vector<std::unique_ptr<graphics::Mesh>> _navMeshes;
 
-    std::vector<Object> _sceneObjects;
-    // -1 means no object is selected
-    int _selectedObject{-1};
+  std::vector<Object> _sceneObjects;
+  // -1 means no object is selected
+  int _selectedObject{-1};
 };

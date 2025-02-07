@@ -1,5 +1,10 @@
 #pragma once
 
+
+// The nif parser is ripped from the OpenMW project.
+// I plan on rewriting it soon. in the meanwhile, check them out on gitlab
+// https://gitlab.com/OpenMW
+
 #include <string>
 
 namespace nif {

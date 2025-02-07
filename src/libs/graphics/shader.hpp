@@ -5,55 +5,56 @@ namespace graphics
 
 enum class ShaderType
 {
-    VERTEX,
-    FRAGMENT,
+  VERTEX,
+  FRAGMENT,
 };
 
 class Shader
 {
 public:
-    Shader(ShaderType shaderType);
-    ~Shader();
+  Shader(ShaderType shaderType);
+  ~Shader();
 
-    void setSource(std::filesystem::path srcPath);
-    void setSource(const char **src);
+  void setSource(std::filesystem::path srcPath);
+  void setSource(const char **src);
 
-    void compile();
+  void compile();
 
-    void destroy();
+  void destroy();
 
-    GLuint getId() const { return _id; }
+  GLuint getId() const { return _id; }
 
 private:
-    GLuint _id{0};
+  GLuint _id{0};
+  std::filesystem::path _path;
 };
 
 class ShaderProgram
 {
 public:
-    ShaderProgram();
-    ~ShaderProgram();
+  ShaderProgram();
+  ~ShaderProgram();
 
-    void attach(Shader *shader);
-    void link();
+  void attach(Shader *shader);
+  void link();
 
-    void use();
+  void use();
 
-    void destroy();
+  void destroy();
 
-    void setUniform(const std::string &name, int value);
-    void setUniform(const std::string &name, unsigned int value);
-    void setUniform(const std::string &name, bool value);
-    void setUniform(const std::string &name, float value);
-    void setUniform(const std::string &name, const glm::vec2 &value);
-    void setUniform(const std::string &name, const glm::vec3 &value);
-    void setUniform(const std::string &name, const glm::mat4 &value);
-    void setUniform(const std::string &name, const std::vector<glm::mat4> &arr);
-    void setUniform(const std::string &name, const std::function<void(int)> setter);
+  void setUniform(const std::string &name, int value);
+  void setUniform(const std::string &name, unsigned int value);
+  void setUniform(const std::string &name, bool value);
+  void setUniform(const std::string &name, float value);
+  void setUniform(const std::string &name, const glm::vec2 &value);
+  void setUniform(const std::string &name, const glm::vec3 &value);
+  void setUniform(const std::string &name, const glm::mat4 &value);
+  void setUniform(const std::string &name, const std::vector<glm::mat4> &arr);
+  void setUniform(const std::string &name, const std::function<void(int)> setter);
 
 private:
-    GLuint _id{0};
-    std::map<std::string, int> _uniformLocations;
+  GLuint _id{0};
+  std::map<std::string, int> _uniformLocations;
 };
 
 } // namespace graphics

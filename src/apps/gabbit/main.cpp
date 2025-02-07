@@ -8,53 +8,53 @@
 
 int main(int argc, char **argv)
 {
-    common::Log::init();
+  common::Log::init();
 
-    EditorOptions opts;
-    opts.windowOpts.title = "Gabbit - Level editor for Munch's Oddysee";
-    opts.windowOpts.w = 1280;
-    opts.windowOpts.h = 720;
+  EditorOptions opts;
+  opts.windowOpts.title = "Gabbit - Level editor for Munch's Oddysee";
+  opts.windowOpts.w = 1280;
+  opts.windowOpts.h = 720;
 
-    std::string filePath;
+  std::string filePath;
 
-    bool printHelp = false;
-    OptionsParser args("Gabbit - Level editor for Munch's Oddysee");
-    args.addArgument({"-w", "--width"}, &opts.windowOpts.w, "Set the window width");
-    args.addArgument({"-h", "--height"}, &opts.windowOpts.h, "Set the window height");
-    args.addArgument({"-f", "--file"}, &filePath, "Set a region file to open");
-    args.addArgument({"--help"}, &printHelp, "Print the help message");
+  bool printHelp = false;
+  OptionsParser args("Gabbit - Level editor for Munch's Oddysee");
+  args.addArgument({"-w", "--width"}, &opts.windowOpts.w, "Set the window width");
+  args.addArgument({"-h", "--height"}, &opts.windowOpts.h, "Set the window height");
+  args.addArgument({"-f", "--file"}, &filePath, "Set a region file to open");
+  args.addArgument({"--help"}, &printHelp, "Print the help message");
 
-    try
-    {
-        args.parse(argc, argv);
-    }
-    catch (std::runtime_error const &e)
-    {
-        LOG_ERROR(e.what());
-        return -1;
-    }
+  try
+  {
+    args.parse(argc, argv);
+  }
+  catch (std::runtime_error const &e)
+  {
+    LOG_ERROR(e.what());
+    return -1;
+  }
 
-    if (printHelp)
-    {
-        args.printHelp();
-        return 0;
-    }
-
-    if (!filePath.empty())
-    {
-        opts.openFile = filePath;
-    }
-
-    Editor e(opts);
-    try
-    {
-        e.run();
-    }
-    catch (std::exception const &e)
-    {
-        LOG_ERROR(e.what());
-        return -1;
-    }
-
+  if (printHelp)
+  {
+    args.printHelp();
     return 0;
+  }
+
+  if (!filePath.empty())
+  {
+    opts.openFile = filePath;
+  }
+
+  Editor e(opts);
+  try
+  {
+    e.run();
+  }
+  catch (std::exception const &e)
+  {
+    LOG_ERROR(e.what());
+    return -1;
+  }
+
+  return 0;
 }

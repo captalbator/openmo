@@ -102,7 +102,6 @@ void NifReader::parse(std::unique_ptr<std::istream> stream)
 {
     NifStream nif(*this, std::move(stream));
 
-    // Check header string
     std::string header = nif.getVersionString();
     const std::string expected_header = "NetImmerse File Format";
 
@@ -112,7 +111,6 @@ void NifReader::parse(std::unique_ptr<std::istream> stream)
         throw std::runtime_error("Invalid NIF Header: " + header);
     }
 
-    // Get version
     uint32_t ver = nif.getUint32();
 
     int major = (ver >> 24) & 0xFF;
@@ -128,17 +126,15 @@ void NifReader::parse(std::unique_ptr<std::istream> stream)
         LOG_ERROR("Unsupported NIF version: {}", ver);
         throw;
     }
-    // Get number of blocks
+
     const size_t n_blocks = nif.getUint32();
     LOG_INFO("nBlocks: {}", n_blocks);
     m_Blocks.resize(n_blocks);
 
-    // Parse nif file
     for (size_t i = 0; i < n_blocks; i++)
     {
         std::unique_ptr<NiObject> block;
 
-        // Check for block type
         std::string block_type = nif.getString();
         if (block_type.empty())
         {
@@ -146,7 +142,6 @@ void NifReader::parse(std::unique_ptr<std::istream> stream)
             throw;
         }
 
-        // Check for block in supported blocks list
         const auto entry = factory.find(block_type);
         if (entry == factory.end())
         {
@@ -177,7 +172,6 @@ void NifReader::parse(std::unique_ptr<std::istream> stream)
         m_Blocks[i] = std::move(block);
     }
 
-    // Get roots
     const size_t n_roots = nif.getUint32();
     LOG_INFO("nRoots: {}", n_roots);
     m_Roots.resize(n_roots);

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 set(PROJECT_NAME OpenMO)
-project(${PROJECT_NAME} LANGUAGES CXX)
+project(${PROJECT_NAME} LANGUAGES C CXX)
 
 aux_source_directory(./src SRC_LIST)
 
@@ -28,7 +28,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(BUILD_OPENMO "Build OpenMO" ON)
+option(BUILD_OPENMO "Build OpenMO" OFF)
 option(BUILD_GABBIT "Build Gabbit" ON)
 
 add_subdirectory(extern)
@@ -44,8 +44,6 @@ include_directories(${CMAKE_SOURCE_DIR}/extern
                     ${CMAKE_SOURCE_DIR}/extern/glm
                     ${CMAKE_SOURCE_DIR}/src)
 
-#list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
 add_subdirectory(src/libs/alive)
 add_subdirectory(src/libs/common)
 add_subdirectory(src/libs/graphics)
@@ -58,11 +56,3 @@ endif()
 if(BUILD_GABBIT)
     add_subdirectory(src/apps/gabbit)
 endif()
-
-
-#install(TARGETS system graphics game DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-#if(MSVC)
-#    set_property(TARGET OpenMO PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR})
-#endif()
-

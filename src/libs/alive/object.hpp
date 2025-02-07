@@ -5,11 +5,11 @@
 
 struct Object
 {
-    bool isActor{false};
-    bool isNif{false};
+  bool isActor{false};
+  bool isNif{false};
 
-    // Actor *actor;
-    nif::NiObject *niObject;
+  // Actor *actor;
+  nif::NiObject *niObject;
 
-    graphics::Mesh *mesh;
+  graphics::Mesh *mesh;
 };

@@ -5,33 +5,33 @@ namespace graphics
 
 struct WindowOptions
 {
-    std::string title;
-    float w, h;
+  std::string title;
+  float w, h;
 };
 
 class Window
 {
 public:
-    Window() {}
-    ~Window() {}
+  Window() {}
+  ~Window() {}
 
-    void init(WindowOptions options);
-    void close();
+  void init(WindowOptions options);
+  void close();
 
-    void setTitle(std::string title);
-    void setDimensions(int w, int h);
+  void setTitle(std::string title);
+  void setDimensions(int w, int h);
 
-    void swap();
+  void swap();
 
-    SDL_Window *getWindow() const { return _window; }
-    SDL_GLContext getContext() const { return _context; }
+  SDL_Window *getWindow() const { return _window; }
+  SDL_GLContext getContext() const { return _context; }
 
 private:
-    SDL_Window *_window;
-    SDL_GLContext _context;
+  SDL_Window *_window;
+  SDL_GLContext _context;
 
-    int _width{1280};
-    int _height{720};
+  int _width{1280};
+  int _height{720};
 };
 
 } // namespace graphics

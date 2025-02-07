@@ -7,44 +7,48 @@
 
 struct EditorOptions
 {
-    graphics::WindowOptions windowOpts;
+  graphics::WindowOptions windowOpts;
 
-    std::filesystem::path openFile;
+  std::filesystem::path openFile;
 };
 
 class Editor
 {
 public:
-    Editor(EditorOptions opts);
-    ~Editor();
+  Editor(EditorOptions opts);
+  ~Editor();
 
-    void createNewRegion(std::filesystem::path path);
-    void loadRegion(std::filesystem::path path);
+  void createNewRegion(std::filesystem::path path);
+  void loadRegion(std::filesystem::path path);
 
-    void run();
+  void run();
 
-    void handleMouseMotionEvent(SDL_MouseMotionEvent &event);
-    void handleMouseWheelEvent(SDL_MouseWheelEvent &event);
-    void handleMouseClickEvent(SDL_MouseButtonEvent &event);
-    void handleWindowEvent(SDL_WindowEvent &event);
+  void handleMouseMotionEvent(SDL_MouseMotionEvent &event);
+  void handleMouseWheelEvent(SDL_MouseWheelEvent &event);
+  void handleMouseClickEvent(SDL_MouseButtonEvent &event);
+  void handleWindowEvent(SDL_WindowEvent &event);
 
 private:
-    void drawMenuBar();
-    void drawSceneView();
+  float drawMenuBar();
+  void drawSceneView();
+  void drawNifExplorer();
+  void drawSceneObject(int objIndex, Object *obj);
+  // void drawTagExplorer();
+  // void drawProperties();
 
-    EditorOptions _options;
+  EditorOptions _options;
 
-    struct
-    {
-        bool isDown{false};
-        int x{0};
-        int y{0};
-    } _pointerState;
+  struct
+  {
+    bool isDown{false};
+    int x{0};
+    int y{0};
+  } _pointerState;
 
-    bool appFocused;
+  bool appFocused;
 
-    std::unique_ptr<graphics::Window> _window;
-    std::unique_ptr<graphics::Renderer> _renderer;
-    std::unique_ptr<Scene> _scene;
-    std::unique_ptr<graphics::Camera> _camera;
+  std::unique_ptr<graphics::Window> _window;
+  std::unique_ptr<graphics::Renderer> _renderer;
+  std::unique_ptr<Scene> _scene;
+  std::unique_ptr<graphics::Camera> _camera;
 };
